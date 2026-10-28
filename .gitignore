@@ -1,0 +1,25 @@
+# Virtual environment
+venv/
+Airline/venv/
+.env
+env/
+
+# Python cache & build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Large data files exceeding GitHub 100MB limit or duplicate uncompressed folders
+Airline/Choice_Models_Training_and_Comparison/data_ztn.npy
+Airline/data_github/
+Airline/Choice_Models_Training_and_Comparison/data.csv

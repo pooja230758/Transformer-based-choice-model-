@@ -239,7 +239,7 @@ def CG_algo(training_data,label,BATCH_SIZE = 32,NUM_EPOCHS = 50,LR = 0.005,c_rat
     iterate_times = 100
     
     #set MNL model as initial solution
-    model_list = [torch.load("Assortment\\MNL_parameters_"+str(c_rate)+".pt")]
+    model_list = [torch.load("Assortment\\MNL_parameters_"+str(c_rate)+".pt", weights_only=False)]
     alpha = np.array([1])
 
     #calculate the current MNL loss

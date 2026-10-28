@@ -1,0 +1,25 @@
+import json
+
+def fix_notebook(file_path):
+    with open(file_path, 'r') as f:
+        nb = json.load(f)
+    
+    for cell in nb.get('cells', []):
+        if cell.get('cell_type') == 'code':
+            source = cell.get('source', [])
+            for i, line in enumerate(source):
+                if 'torch.load(' in line:
+                    # Fix path
+                    line = line.replace('\\\\', '/')
+                    # Add weights_only=False if not present
+                    if 'weights_only' not in line:
+                        line = line.replace(')', ', weights_only=False)')
+                    source[i] = line
+                # Also fix PATH = "trained_model_ztn\\..."
+                if 'PATH =' in line and '\\\\' in line:
+                    source[i] = line.replace('\\\\', '/')
+    
+    with open(file_path, 'w') as f:
+        json.dump(nb, f, indent=1)
+
+fix_notebook('choice model comparison with real data.ipynb')

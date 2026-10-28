@@ -49,7 +49,7 @@ def transpose_output(x, num_heads):
 
 
 class DotProductAttention(nn.Module):
-     """Scaled Dot-Product Attention"""
+    """Scaled Dot-Product Attention"""
     def __init__(self, dropout, **kwargs):
         super(DotProductAttention, self).__init__(**kwargs)
         self.dropout = nn.Dropout(dropout)

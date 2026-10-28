@@ -11,9 +11,9 @@ import math
 EMBEDDING_SIZE = 16
 DROPOUT = 0.5
 DEEPLAYER_SIZE = 64
-FEATURE_SIZES = [6, 10, 2, 1, 1, 1, 1, 2, 1, 1, 2, 2]
+FEATURE_SIZES = [11, 7, 97, 63, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1]
 FEATURE_SIZES1 = np.array([6, 10, 2, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1,2,2,2,2])
-FIELD_SIZE = 12
+FIELD_SIZE = 17
 k = 5
 
 from sklearn.metrics import log_loss
@@ -23,18 +23,19 @@ class MNL_loss(nn.Module):
         super().__init__()
 
     def forward(self,x,y, temp_assortment_list):
-        # batch_size,choice_size = x.shape
         batch_size = len(temp_assortment_list)
         loss = 0
         for i in range(batch_size):
             temp_sum = 0
             temp_y = 0
-            # loss = loss + torch.log10((torch.exp(torch.sum(x[i]*y[i])))/(torch.sum(torch.exp(x[i]))))
             for j in temp_assortment_list[i]:
                 temp_sum += torch.exp(x[j])
                 if y[j] == 1:
                     temp_y = torch.exp(x[j])
-            loss = loss + torch.log10(temp_y/(temp_sum))
+            if temp_y == 0:
+                loss = loss + torch.log10(1.0 / (1.0 + temp_sum))
+            else:
+                loss = loss + torch.log10(temp_y / (1.0 + temp_sum))
         return -loss/batch_size
 
 #Define the loss function of LC-MNL Model
@@ -50,13 +51,28 @@ class MMNL_loss(nn.Module):
             g = 0
             for k in range(model_num):
                 temp_sum = 0
+                temp_y = 0
                 for j in temp_assortment_list[i]:
                     temp_sum += torch.exp(z[k,j])
                     if y[j] == 1:
                         temp_y = torch.exp(z[k,j])
-                g = g + alpha[k]*temp_y/temp_sum
-            g = float(g)
-            loss = loss + torch.exp(torch.sum(x[temp_assortment_list[i]]*y[temp_assortment_list[i]]))/(torch.sum(torch.exp(x[temp_assortment_list[i]]))*g)
+                if temp_y == 0:
+                    g = g + alpha[k] * 1.0 / (1.0 + temp_sum)
+                else:
+                    g = g + alpha[k] * temp_y / (1.0 + temp_sum)
+            
+            temp_y_x = 0
+            temp_sum_x = 0
+            for j in temp_assortment_list[i]:
+                temp_sum_x += torch.exp(x[j])
+                if y[j] == 1:
+                    temp_y_x = torch.exp(x[j])
+            if temp_y_x == 0:
+                current_prob = 1.0 / (1.0 + temp_sum_x)
+            else:
+                current_prob = temp_y_x / (1.0 + temp_sum_x)
+            
+            loss = loss + current_prob / g
         return (-loss)/batch_size
 
 #Define the loss function of Exponomial Choice Model
@@ -289,7 +305,7 @@ class EarlyStopping:
         self.counter = 0
         self.best_score = None
         self.early_stop = False
-        self.val_loss_min = np.Inf
+        self.val_loss_min = np.inf
         self.delta = delta
 
     def __call__(self, val_loss, model):

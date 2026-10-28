@@ -1,0 +1,2 @@
+class conicmc:
+    pass
